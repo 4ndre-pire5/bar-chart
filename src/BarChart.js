@@ -27,59 +27,83 @@ const BarChart = ({ data, width = 600, height = 400 }) => {
             .domain([0, d3.max(data, d => d.value) * 1.1]) // Valores máximos para o eixo Y
             .range([innerHeight, 0]); // Inverte para que o 0 seja na parte inferior
 
+        const tooltip = d3.select('#tooltip'); // Seleciona a div de tooltip
+
         // Desenha as barras
         g.selectAll('.bar')
             .data(data)
             .enter()
             .append('rect')
-            .attr('class', 'bar')
+            .text('data-date', d => d.label)
             .attr('x', d => xScale(d.label))
             .attr('y', d => yScale(d.value))
             .attr('width', xScale.bandwidth())
             .attr('height', d => innerHeight - yScale(d.value))
             .attr('fill', 'steelblue')
             .attr('data-date', d => d.label)
-            .attr('data-gdp', d => d.value);
+            .attr('data-gdp', d => d.value)
+            .on("mouseover", (event, d) => {
+                d3.select(event.currentTarget)
+                    .attr('fill', 'darkorange'); // Destaca a barra ao passar o mouse
 
-        // Desenha o eixo X
-        const minYear = 1950;
-        const maxYear = d3.max(data, d => parseInt(d.label.substring(0, 4)));
-        const actualMaxYear = Math.ceil(maxYear / 10) * 10;
+                tooltip.transition()
+                    .duration(200) // Transição para aparecer
+                    .style("opacity", 0.9); // Torna visível
 
-        const tickDates = [];
-        for (let year = minYear; year <= actualMaxYear; year += 5) {
-            const dateStringForYear = data.find(d => d.label.startsWith(String(year)) && d.label.endsWith("-01-01"));
-            if (dateStringForYear) {
-                tickDates.push(dateStringForYear.label);
-            } else if (year >= minYear && year <= maxYear) { // Caso não exista exato, mas o ano esteja no range
-                // Se o ano específico "YYYY-01-01" não existe, mas o ano "YYYY" está no nosso intervalo,
-                // podemos tentar encontrar a primeira data do ano.
-                const anyDateInYear = data.find(d => d.label.startsWith(String(year)));
-                if (anyDateInYear) {
-                    tickDates.push(anyDateInYear.label);
-                }
+                // Define o conteúdo do tooltip
+                tooltip.html(`Date: ${d.label}<br>GDP: ${d3.format("$,.1f")(d.value)} billion`) // Formata o GDP
+                    .attr("data-date", d.label) // Adiciona o data-date ao tooltip também
+                    .style("left", (event.pageX + 10) + "px") // Posição X (um pouco à direita do mouse)
+                    .style("top", (event.pageY - 28) + "px"); // Posição Y (um pouco acima do mouse)
+            })
+            .on("mouseout", (event, d) => {
+                d3.select(event.currentTarget)
+                    .attr('fill', 'steelblue'); // Volta a cor original da barra ao passar o mouse
+
+                tooltip.transition()
+                    .duration(500) // Transição para desaparecer
+                    .style("opacity", 0); // Torna invisível
+            });
+
+    // Desenha o eixo X
+    const minYear = 1950;
+    const maxYear = d3.max(data, d => parseInt(d.label.substring(0, 4)));
+    const actualMaxYear = Math.ceil(maxYear / 10) * 10;
+
+    const tickDates = [];
+    for (let year = minYear; year <= actualMaxYear; year += 5) {
+        const dateStringForYear = data.find(d => d.label.startsWith(String(year)) && d.label.endsWith("-01-01"));
+        if (dateStringForYear) {
+            tickDates.push(dateStringForYear.label);
+        } else if (year >= minYear && year <= maxYear) { // Caso não exista exato, mas o ano esteja no range
+            // Se o ano específico "YYYY-01-01" não existe, mas o ano "YYYY" está no nosso intervalo,
+            // podemos tentar encontrar a primeira data do ano.
+            const anyDateInYear = data.find(d => d.label.startsWith(String(year)));
+            if (anyDateInYear) {
+                tickDates.push(anyDateInYear.label);
             }
         }
+    }
 
-        g.append('g')
-            .attr('id', 'x-axis')
-            .attr('transform', `translate(0, ${innerHeight})`) // Posiciona o eixo na parte inferior
-            .call(d3.axisBottom(xScale)
-                .tickValues(tickDates) 
-                .tickFormat(d => String(d).substring(0, 4)));
-
-
-        // Desenha o eixo Y
-        g.append('g')
-            .attr('id', 'y-axis')
-            .call(d3.axisLeft(yScale));
+    g.append('g')
+        .attr('id', 'x-axis')
+        .attr('transform', `translate(0, ${innerHeight})`) // Posiciona o eixo na parte inferior
+        .call(d3.axisBottom(xScale)
+            .tickValues(tickDates)
+            .tickFormat(d => String(d).substring(0, 4)));
 
 
-    }, [data, width, height]); // Dependências do useEffect: o efeito será re-executado se 'data', 'width' ou 'height' mudarem
+    // Desenha o eixo Y
+    g.append('g')
+        .attr('id', 'y-axis')
+        .call(d3.axisLeft(yScale));
 
-    return (
-        <svg ref={svgRef}></svg>
-    );
+
+}, [data, width, height]); // Dependências do useEffect: o efeito será re-executado se 'data', 'width' ou 'height' mudarem
+
+return (
+    <svg ref={svgRef}></svg>
+);
 };
 
 export default BarChart;

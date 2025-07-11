@@ -55,6 +55,7 @@ function App() {
         <div id='bar-chart'>
           <BarChart data={chartData} width={700} height={450} />
         </div>
+        <div id='tooltip' style={{ opacity: 0 }}></div>
       </div>
     </>
   );
