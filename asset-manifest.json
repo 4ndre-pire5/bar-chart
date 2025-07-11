@@ -1,0 +1,13 @@
+{
+  "files": {
+    "main.css": "/bar-chart/static/css/main.ec95c999.css",
+    "main.js": "/bar-chart/static/js/main.524f9135.js",
+    "index.html": "/bar-chart/index.html",
+    "main.ec95c999.css.map": "/bar-chart/static/css/main.ec95c999.css.map",
+    "main.524f9135.js.map": "/bar-chart/static/js/main.524f9135.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.ec95c999.css",
+    "static/js/main.524f9135.js"
+  ]
+}
